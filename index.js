@@ -1,11 +1,33 @@
 const express = require("express");
 const app = express();
 const port = 5000;
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 app.use(cors());
 app.use(express.json());
+
+function createToken(user) {
+  const token = jwt.sign(
+    {
+      email: user.email,
+    },
+    "secret",
+    { expiresIn: "7d" }
+  );
+  return token;
+}
+
+function verifyToken(req, res, next) {
+  const token = req.headers.authorization.split(" ")[1];
+  const verify = jwt.verify(token, "secret");
+  if (!verify?.email) {
+    return res.send("You are not authorized");
+  }
+  req.user = verify.email;
+  next();
+}
 
 const uri =
   "mongodb+srv://sasohanme:aiV0BrcM2sIb86BM@waste-not-database.1kpws26.mongodb.net/?retryWrites=true&w=majority&appName=waste-not-database";
@@ -25,22 +47,26 @@ async function run() {
     const productDB = client.db("productDB");
     const productCollection = productDB.collection("productCollection");
 
+    const userDB = client.db("userDB");
+    const userCollection = userDB.collection("userCollection");
+
     //product
     app.post("/shoes", verifyToken, async (req, res) => {
       const shoesData = req.body;
-      const result = await shoesCollection.insertOne(shoesData);
+      const result = await productCollection.insertOne(shoesData);
       res.send(result);
     });
 
     app.get("/shoes", async (req, res) => {
-      const shoesData = shoesCollection.find();
+      const shoesData = productCollection.find();
       const result = await shoesData.toArray();
+
       res.send(result);
     });
 
     app.get("/shoes/:id", async (req, res) => {
       const id = req.params.id;
-      const shoesData = await shoesCollection.findOne({
+      const shoesData = await productCollection.findOne({
         _id: new ObjectId(id),
       });
       res.send(shoesData);
@@ -48,7 +74,7 @@ async function run() {
     app.patch("/shoes/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
-      const result = await shoesCollection.updateOne(
+      const result = await productCollection.updateOne(
         { _id: new ObjectId(id) },
         { $set: updatedData }
       );
@@ -56,9 +82,56 @@ async function run() {
     });
     app.delete("/shoes/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
-      const result = await shoesCollection.deleteOne({ _id: new ObjectId(id) });
+      const result = await productCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
       res.send(result);
     });
+
+    // user
+    app.post("/user", async (req, res) => {
+      const user = req.body;
+
+      const token = createToken(user);
+      const isUserExist = await userCollection.findOne({ email: user?.email });
+      if (isUserExist?._id) {
+        return res.send({
+          statu: "success",
+          message: "Login success",
+          token,
+        });
+      }
+      await userCollection.insertOne(user);
+      console.log(token);
+      return res.send({ token });
+    });
+
+    // user/test@gmail
+
+    app.get("/user/get/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const result = await userCollection.findOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email });
+      res.send(result);
+    });
+
+    app.patch("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const userData = req.body;
+      const result = await userCollection.updateOne(
+        { email },
+        { $set: userData },
+        { upsert: true }
+      );
+      res.send(result);
+    });
+
     console.log("successfully connected to MongoDB!");
   } finally {
   }
