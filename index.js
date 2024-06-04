@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const port = 5000;
@@ -29,8 +30,7 @@ function verifyToken(req, res, next) {
   next();
 }
 
-const uri =
-  "mongodb+srv://sasohanme:aiV0BrcM2sIb86BM@waste-not-database.1kpws26.mongodb.net/?retryWrites=true&w=majority&appName=waste-not-database";
+const uri = process.env.DATABASE_URL;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
