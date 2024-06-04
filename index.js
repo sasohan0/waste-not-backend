@@ -103,7 +103,7 @@ async function run() {
         });
       }
       await userCollection.insertOne(user);
-      console.log(token);
+
       return res.send({ token });
     });
 
@@ -111,7 +111,7 @@ async function run() {
 
     app.get("/user/get/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+
       const result = await userCollection.findOne({ _id: new ObjectId(id) });
       res.send(result);
     });
