@@ -89,6 +89,11 @@ async function run() {
     });
 
     // user
+    app.get("/user", verifyToken, async (req, res) => {
+      const usersData = userCollection.find();
+      const result = await usersData.toArray();
+      res.send(result);
+    });
     app.post("/user", async (req, res) => {
       const user = req.body;
 
