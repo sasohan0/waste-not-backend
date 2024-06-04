@@ -51,27 +51,27 @@ async function run() {
     const userCollection = userDB.collection("userCollection");
 
     //product
-    app.post("/shoes", verifyToken, async (req, res) => {
-      const shoesData = req.body;
-      const result = await productCollection.insertOne(shoesData);
+    app.post("/products", verifyToken, async (req, res) => {
+      const productsData = req.body;
+      const result = await productCollection.insertOne(productsData);
       res.send(result);
     });
 
-    app.get("/shoes", async (req, res) => {
-      const shoesData = productCollection.find();
-      const result = await shoesData.toArray();
+    app.get("/products", async (req, res) => {
+      const productsData = productCollection.find();
+      const result = await productsData.toArray();
 
       res.send(result);
     });
 
-    app.get("/shoes/:id", async (req, res) => {
+    app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
-      const shoesData = await productCollection.findOne({
+      const productsData = await productCollection.findOne({
         _id: new ObjectId(id),
       });
-      res.send(shoesData);
+      res.send(productsData);
     });
-    app.patch("/shoes/:id", verifyToken, async (req, res) => {
+    app.patch("/products/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
       const result = await productCollection.updateOne(
@@ -80,7 +80,7 @@ async function run() {
       );
       res.send(result);
     });
-    app.delete("/shoes/:id", verifyToken, async (req, res) => {
+    app.delete("/products/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const result = await productCollection.deleteOne({
         _id: new ObjectId(id),
@@ -108,20 +108,20 @@ async function run() {
 
     // user/test@gmail
 
-    app.get("/user/get/:id", async (req, res) => {
+    app.get("/user/get/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       console.log(id);
       const result = await userCollection.findOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
-    app.get("/user/:email", async (req, res) => {
+    app.get("/user/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const result = await userCollection.findOne({ email });
       res.send(result);
     });
 
-    app.patch("/user/:email", async (req, res) => {
+    app.patch("/user/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const userData = req.body;
       const result = await userCollection.updateOne(
