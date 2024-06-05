@@ -92,7 +92,7 @@ async function run() {
 
     app.post("/user", async (req, res) => {
       const user = req.body;
-
+      console.log(user);
       const token = createToken(user);
       const isUserExist = await userCollection.findOne({ email: user?.email });
       if (isUserExist?._id) {
