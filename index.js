@@ -109,7 +109,7 @@ async function run() {
 
     // user/test@gmail
 
-    app.get("/user/get/:id", verifyToken, async (req, res) => {
+    app.get("/user/get/:id", async (req, res) => {
       const id = req.params.id;
 
       const result = await userCollection.findOne({ _id: new ObjectId(id) });
